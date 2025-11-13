@@ -6,9 +6,13 @@
 /e2e/test-output/
 /.angular/
 .angular/
+**/dist/
+**/tmp/
+**/coverage/
+*.log
 
 # Node modules and dependency files
-/node_modules/
+**/node_modules
 /package-lock.json
 /yarn.lock
 
@@ -26,3 +30,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+.idea/
+.vscode/
+.DS_Store
