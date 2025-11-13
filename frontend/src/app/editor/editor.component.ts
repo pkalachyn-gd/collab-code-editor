@@ -9,10 +9,7 @@ import {
   startCompletion,
 } from '@codemirror/autocomplete';
 import { AiCompletionService } from '../services/ai-completion.service';
-
-import * as Y from 'yjs';
-import { UndoManager } from 'yjs';
-import { WebsocketProvider } from 'y-websocket';
+import { CollaborationService } from '../services/collaboration.service';
 import { yCollab } from 'y-codemirror.next';
 
 @Component({
@@ -20,28 +17,29 @@ import { yCollab } from 'y-codemirror.next';
   standalone: true,
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
+  providers: [CollaborationService],
+  // We don't use CDR:OnPush,  because we have external signals from WebSocket
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorHost') editorHost!: ElementRef;
 
   private editor!: EditorView;
-  private ydoc: Y.Doc | null = null;
-  private provider: WebsocketProvider | null = null;
-
   private completionThrottle = false;
 
-  constructor(private aiService: AiCompletionService) {}
+  constructor(
+    private aiService: AiCompletionService,
+    private collabService: CollaborationService
+  ) {}
 
   ngAfterViewInit(): void {
-    this.ydoc = new Y.Doc();
     const urlParams = new URLSearchParams(window.location.search);
-    const roomName = urlParams.get('room') || 'my-default-room';
+    const roomName = urlParams.get('room') || 'default-room';
 
-    this.provider = new WebsocketProvider('ws://localhost:1234', roomName, this.ydoc);
-    const yText = this.ydoc.getText('codemirror');
-    const awareness = this.provider.awareness;
+    this.collabService.connect(roomName);
 
-    const undoManager = new UndoManager(yText);
+    const yText = this.collabService.yText;
+    const awareness = this.collabService.awareness;
+    const undoManager = this.collabService.undoManager;
 
     const customAiCompletion = (context: CompletionContext): Promise<CompletionResult | null> => {
       const cursorPosition = context.pos;
@@ -86,9 +84,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       if (this.completionThrottle) {
         return true;
       }
-
       this.completionThrottle = true;
-
       return startCompletion(view);
     };
 
@@ -115,11 +111,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.provider) {
-      this.provider.destroy();
-    }
-    if (this.ydoc) {
-      this.ydoc.destroy();
-    }
+    this.collabService.ngOnDestroy();
   }
 }

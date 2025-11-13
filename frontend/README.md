@@ -2,14 +2,6 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.9.
 
-## For cheking
-
-cd yjs-server
-node server.js
-
-For checking code collaboration use 'room' in URL:
-http://localhost:4200/?room=project1
-
 ## Development server
 
 To start a local development server, run:
