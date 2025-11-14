@@ -8,6 +8,4 @@ import { EditorComponent } from './editor/editor.component';
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
-export class App {
-  protected readonly title = signal('CodeShare');
-}
+export class App {}
