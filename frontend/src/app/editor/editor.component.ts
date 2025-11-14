@@ -24,7 +24,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorHost') editorHost!: ElementRef;
 
   private editor!: EditorView;
-  private completionThrottle = false;
+  private shouldThrottleCompletion = false;
 
   constructor(
     private aiService: AiCompletionService,
@@ -53,7 +53,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
       };
 
       const resetThrottle = () => {
-        this.completionThrottle = false;
+        this.shouldThrottleCompletion = false;
       };
 
       return this.aiService
@@ -81,10 +81,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     };
 
     const throttledStartCompletion = (view: EditorView): boolean => {
-      if (this.completionThrottle) {
+      if (this.shouldThrottleCompletion) {
         return true;
       }
-      this.completionThrottle = true;
+      this.shouldThrottleCompletion = true;
       return startCompletion(view);
     };
 
