@@ -34,11 +34,9 @@ export class CollaborationService implements OnDestroy {
   ngOnDestroy(): void {
     if (this.provider) {
       this.provider.destroy();
-      console.log('CollaborationService provider destroyed');
     }
     if (this.ydoc) {
       this.ydoc.destroy();
-      console.log('CollaborationService ydoc destroyed');
     }
   }
 }
