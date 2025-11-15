@@ -3,19 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-
-export interface AiCompletionRequest {
-  fullText: string;
-  cursorPosition: number;
-  textBeforeCursor: string;
-}
-
-export interface AiCompletionResponse {
-  suggestions: {
-    label: string;
-    type: string; // e.g., "function", "keyword"
-  }[];
-}
+import { AiCompletionRequest, AiCompletionResponse } from '../models/ai-completion.models';
 
 @Injectable({
   providedIn: 'root',
