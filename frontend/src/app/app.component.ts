@@ -5,7 +5,7 @@ import { EditorComponent } from './editor/editor.component';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, EditorComponent],
-  templateUrl: './app.html',
-  styleUrl: './app.scss',
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
 })
-export class App {}
+export class AppComponent {}
