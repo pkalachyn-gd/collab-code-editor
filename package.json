@@ -1,0 +1,11 @@
+{
+  "name": "collab-code-editor-runner",
+  "version": "1.0.0",
+  "description": "A script to run all services for the collaborative code editor.",
+  "scripts": {
+    "start": "concurrently \"cd backend && npm install && node server.js\" \"cd code-edtior-autocompleter && ./mvnw spring-boot:run\" \"cd frontend && npm install && ng serve --open\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
