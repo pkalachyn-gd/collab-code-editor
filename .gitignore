@@ -34,3 +34,7 @@ yarn-error.log*
 .idea/
 .vscode/
 .DS_Store
+/code-edtior-autocompleter/*.iml
+/code-edtior-autocompleter/target/
+/code-edtior-autocompleter/.mvn/
+/code-edtior-autocompleter/.gemini/
