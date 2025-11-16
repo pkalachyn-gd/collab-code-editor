@@ -1,18 +1,18 @@
-# Real-time Collaborative Code Editor (Angular + Yjs + Gemini)
+# Real-time Collaborative Code Editor (Angular/Yjs + Node.js/Websocket + Spring Boot/Gemini)
 
-This is a mock project submission for a real-time collaborative code editor built with Angular, CodeMirror 6, and Yjs. It features a live collaboration server (Node.js) and a framework for AI code completion (currently mocked) designed to be powered by the Gemini API.
+This is a project for a real-time collaborative code editor built with Angular, CodeMirror 6, and Yjs. It features a live collaboration server (Node.js) and an AI code completion service powered by the Gemini API.
 
 # Architecture Overview
 
-The system is designed as a decoupled frontend and backend, with collaboration and AI logic handled by two separate communication channels.
+The system is designed as a decoupled frontend and backend, with collaboration and AI logic handled by two separate services.
 
     Frontend (Angular): A standalone Angular application (/frontend) that hosts a CodeMirror 6 editor.
 
         CollaborationService: Manages the Yjs document (Y.Doc), UndoManager, and the WebSocket connection to the collaboration server.
 
-        AiCompletionService: Manages requests for AI code completion (currently mocked, returns static data).
+        AiCompletionService: Manages HTTP requests for AI code completion to the Spring Boot backend.
 
-        EditorComponent: Orchestrates the services, binds them to the CodeMirror EditorView, and handles UI logic like the completion hotkey and throttling.
+        EditorComponent: Orchestrates the services, binds them to the CodeMirror EditorView, and handles UI logic.
 
     Backend (Two Components):
 
@@ -26,63 +26,93 @@ The system is designed as a decoupled frontend and backend, with collaboration a
 
             Manages and broadcasts user "awareness" (cursors).
 
-        2. AI Proxy Server (Planned):
+        2. AI Autocompleter Service (Spring Boot):
 
-            This component is not yet built; logic is mocked on the frontend.
+            Located in /code-edtior-autocompleter.
 
-            The design requires a separate backend (e.g., Java, Node.js) to act as a secure proxy.
+            A Spring Boot application that provides intelligent code completion suggestions powered by Google's Gemini API.
 
-            It would expose an HTTP endpoint (e.g., POST /api/complete).
+            Exposes a single endpoint: POST /api/complete.
 
-            This server would be the only part to hold the GEMINI_API_KEY, receive code context from the frontend, call the Google AI SDK, and return suggestions.
+            Securely handles the Gemini API key, preventing its exposure to the frontend.
 
 # Communication Flow
 
-    [Client 1 (Angular)] <--- (WebSocket) ---> [Backend (Node.js): Yjs Server] <--- (WebSocket) ---> [Client 2 (Angular)]
-    |
-    | <--- (HTTP POST) ---> [Backend: AI Proxy (Planned)] ---> [Google Gemini API]
-    |
-    (Mock AI Service) <--- (Current Implementation)
+```mermaid
+graph TD
+    subgraph "User Space"
+        Client1["Client 1 (Angular)"]
+        Client2["Client 2 (Angular)"]
+    end
+
+    subgraph "Backend Services"
+        YjsServer["Collaboration Server (Node.js)"]
+        Autocompleter["AI Autocompleter (Spring Boot)"]
+    end
+
+    subgraph "Google Cloud"
+        GeminiAPI["Gemini API"]
+    end
+
+    Client1 -- "Real-time Sync (WebSocket)" <--> YjsServer
+    Client2 -- "Real-time Sync (WebSocket)" <--> YjsServer
+    
+    Client1 -- "Code Completion (HTTP POST)" --> Autocompleter
+    Client2 -- "Code Completion (HTTP POST)" --> Autocompleter
+
+    Autocompleter -- "Google AI SDK" --> GeminiAPI
+```
 
 # Getting Started
 
-Prerequisites
-Node.js (v18 or higher)
-Angular CLI (npm install -g @angular/cli)
+To get the collaborative code editor up and running, follow these steps:
 
-    1. Run the Backend (Collaboration Server)
+## Prerequisites
 
-    The y-websocket server is required for real-time text synchronization.
+Before you begin, ensure you have the following installed:
 
-        # Navigate to the backend directory
-        cd backend
+*   **Java 21**
+*   **Node.js** (v18 or higher)
+*   A **Google Gemini API Key**
 
-        # Install dependencies
-        npm install
+## 1. Configure Environment Variables
 
-        # Run the server
-        node server.js
+The AI Autocompleter service requires your Gemini API key. You can also optionally specify the Gemini model to use.
 
-    The server will be running at ws://localhost:1234.
+Set these environment variables in your terminal session:
 
-    2. Run the Frontend (Angular App)
-    The Angular app contains the UI and editor.
+```bash
+export GEMINI_API_KEY="YOUR_API_KEY" # Replace with your actual Gemini API Key
+# export GEMINI_MODEL="gemini-2.5-pro" # Optional: Uncomment and set to use a different model (defaults to gemini-2.5-flash)
+```
 
-        # Navigate to the frontend directory
-        cd frontend
+## 2. Install Dependencies and Run All Services
 
-        # Install dependencies
-        npm install
+From the **root directory** of the project, execute the following commands. This will install necessary Node.js dependencies (including `concurrently` for running multiple processes) and then launch all three applications simultaneously.
 
-        # Run the development server
-        ng serve --open
+```bash
+# Install root-level Node.js dependencies (including 'concurrently')
+npm install
 
-    The application will open at http://localhost:4200/.
+# Run all services: Frontend, Node.js Collaboration Server, and Spring Boot AI Service
+npm start
+```
+
+### What to Expect:
+
+Upon successful execution of `npm start`, the following services will be running:
+
+*   **Node.js Collaboration Server:** Accessible via WebSocket at `ws://localhost:1234`.
+*   **Spring Boot AI Autocompleter Service:** Accessible via HTTP at `http://localhost:8080`.
+*   **Angular Frontend:** Will automatically open in your default browser at `http://localhost:4200`.
+
+You are now ready to use the collaborative code editor!
 
 # How to Test
 
     1. Real-time Collaboration (Yjs)
-    This feature is fully functional.
+
+        This feature is fully functional.
 
         Open your browser to http://localhost:4200/?room=project-A.
 
@@ -90,60 +120,31 @@ Angular CLI (npm install -g @angular/cli)
 
         Type in one editor. The text (and your cursor) will appear in real-time in the other window.
 
-        Now, open a third tab and change the URL to a different room: http://localhost:4200/?room=project-B.
+    2. AI Code Completion
 
-        Typing in this third tab will not sync with the other two, proving that session management by "room" is working.
-
-    2. AI Code Completion (Mocked)
-
-        This feature simulates the frontend part of the AI integration.
+        This feature is now connected to the live AI backend.
 
         In the editor, type a few letters (e.g., cons).
 
         Press the custom hotkey: Ctrl + . (Control + Dot).
 
-        A completion menu will appear with mocked suggestions (console, console.log, const).
+        A completion menu will appear with suggestions from the Gemini API.
 
-        The hotkey is throttled: if you spam the hotkey, it will only send one request at a time, waiting for the previous (mock) request to complete before sending another.
+# Project Details
 
-        Typing text (e.g., function...) will not trigger the completion automatically. It is bound only to the hotkey, as specified by activateOnTyping: false.
+    ## Gemini API Key Configuration
 
-# Project Details (as required)
+        The `GEMINI_API_KEY` is used by the Spring Boot application. It is read from the environment variable you set in the "Getting Started" section. The key is never exposed to the frontend.
 
-    ## Gemini API Key Configuration (Planned)
-
-        The current implementation uses a mock AiCompletionService and does not require an API key.
-
-        To implement the final solution:
-
-            1. A backend proxy (e.g., Spring Boot or Express.js) would be built.
-
-            2. The GEMINI_API_KEY would be stored securely in an environment variable (.env or application.properties) on that server.
-
-            3. The AiCompletionService in Angular would be refactored to replace of(mockResponse) with an HttpClient.post call to that proxy.
+        You can also specify the Gemini model to use by setting the `GEMINI_MODEL` environment variable. If not set, the service will default to `gemini-2.5-flash` as configured in `application.properties`.
 
     ## Prompt Engineering & Response Parsing
 
-        Prompt (Request): When the hotkey is pressed, the EditorComponent's customAiCompletion function gathers the code context. The AiCompletionRequest object is built with fullText, cursorPosition, and textBeforeCursor. This payload is sent to the AiCompletionService. A real prompt to Gemini would use this context, e.g.: Complete the code. The user is at the | cursor: \n\n[fullText]\n\n.
+        Prompt (Request): When the hotkey is pressed, the frontend sends a POST request to /api/complete with a JSON payload containing the fullText of the document, the cursorPosition, and the textBeforeCursor.
 
-        Response Parsing: The component expects the service to return an Observable<AiCompletionResponse>.
-
-        Expected JSON: { "suggestions": [{ "label": "...", "type": "..." }] }
-
-        Parsing: The .then() block of the promise maps this response array into the format required by @codemirror/autocomplete:
-
-        return {
-            from: cursorPosition, // Where the completion starts
-            options: response.suggestions.map((s) => ({
-                label: s.label, // The text to show
-                type: s.type, // (e.g., 'function', 'keyword')
-                apply: s.label, // The text to insert
-            })),
-        };
+        Response Parsing: The Spring Boot service receives this request, constructs a detailed prompt for the Gemini API, and parses the response. It returns a JSON object in the format { "suggestions": [{ "label": "...", "type": "..." }] }. The frontend then maps this into the format required by CodeMirror's autocomplete extension.
 
     ## Assumptions & Simplifications
-
-        Mock AI: The most significant simplification. The AiCompletionService returns a static, hard-coded JSON object after a 300ms delay and does not call any external API.
 
         No Persistence: The y-websocket server stores all documents in memory. If the Node.js server restarts, all data is lost.
 
@@ -153,9 +154,7 @@ Angular CLI (npm install -g @angular/cli)
 
     ## Potential Next Steps
 
-        Build the AI Proxy: Implement the Java/Node.js backend proxy to securely manage the GEMINI_API_KEY and call the @google/generative-ai SDK.
-
-        Activate Real AI: Replace the mock service in AiCompletionService with a real HttpClient module to call the new proxy.
+        Activate Real AI in Frontend: The AiCompletionService in Angular needs to be updated to call the live backend at http://localhost:8080/api/complete instead of returning mock data.
 
         Add Persistence: Integrate a persistent Yjs provider (like y-leveldb or y-mongodb) into the y-websocket server to save document states.
 
