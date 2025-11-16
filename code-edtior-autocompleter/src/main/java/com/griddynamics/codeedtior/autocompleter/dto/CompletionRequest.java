@@ -1,4 +1,6 @@
 package com.griddynamics.codeedtior.autocompleter.dto;
 
-public record CompletionRequest(String fullText, int cursorPosition, String textBeforeCursor) {
+import jakarta.validation.constraints.NotBlank;
+
+public record CompletionRequest(@NotBlank String fullText, int cursorPosition, @NotBlank String textBeforeCursor) {
 }
