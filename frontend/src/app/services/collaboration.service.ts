@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import * as Y from 'yjs';
 import { UndoManager } from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
+import { environment } from '../../environments/environment';
 
 /**
  * This service is NOT provided at 'root'.
@@ -25,11 +26,7 @@ export class CollaborationService implements OnDestroy {
 
     // We use `any` for awareness, since WebsocketProvider has
     // a complex type that we don't need to fully describe here.
-    this.provider = new WebsocketProvider(
-      'ws://localhost:1234',
-      roomName,
-      this.ydoc
-    );
+    this.provider = new WebsocketProvider(environment.websocketUrl, roomName, this.ydoc);
 
     this.awareness = this.provider.awareness;
     this.undoManager = new UndoManager(this.yText);
