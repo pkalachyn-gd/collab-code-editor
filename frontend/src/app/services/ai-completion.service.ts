@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AiCompletionRequest, AiCompletionResponse } from '../models/ai-completion.models';
 
