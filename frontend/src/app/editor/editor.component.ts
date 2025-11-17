@@ -10,7 +10,8 @@ import {
 } from '@codemirror/autocomplete';
 import { AiCompletionService } from '../services/ai-completion.service';
 import { CollaborationService } from '../services/collaboration.service';
-import { yCollab } from 'y-codemirror.next';
+import * as Y from 'yjs';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-editor',
@@ -31,7 +32,12 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     private collabService: CollaborationService
   ) {}
 
-  ngAfterViewInit(): void {
+  async _yCollab(text: Y.Text, awareness: any, options?: any) {
+    const { yCollab } = await import('y-codemirror.next');
+    return yCollab(text, awareness, options);
+  }
+
+  async ngAfterViewInit(): Promise<void> {
     const urlParams = new URLSearchParams(window.location.search);
     const roomName = urlParams.get('room') || 'default-room';
 
@@ -42,6 +48,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     const undoManager = this.collabService.undoManager;
 
     const customAiCompletion = (context: CompletionContext): Promise<CompletionResult | null> => {
+      // matches word characters and dots, allowing property access completions like 'object.property'
+      const match = context.matchBefore(/[\w\.]+/);
+      const fromPos = match ? match.from : context.pos;
+
       const cursorPosition = context.pos;
       const fullText = context.state.doc.toString();
 
@@ -54,21 +64,20 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
         this.shouldThrottleCompletion = false;
       };
 
-      return this.aiService
-        .getCompletions(requestPayload)
-        .toPromise()
+      return firstValueFrom(this.aiService.getCompletions(requestPayload))
         .then((response): CompletionResult | null => {
           resetThrottle();
           if (!response || !response.suggestions || response.suggestions.length === 0) {
             return null;
           }
           return {
-            from: cursorPosition,
+            from: fromPos,
             options: response.suggestions.map((s) => ({
               label: s.label,
               type: s.type,
               apply: s.label,
             })),
+            filter: false,
           };
         })
         .catch((err) => {
@@ -102,7 +111,8 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
           activateOnTyping: false,
         }),
         newCompletionKeymap,
-        yCollab(yText, awareness, { undoManager }),
+
+        await this._yCollab(yText, awareness, { undoManager }),
       ],
       parent: this.editorHost.nativeElement,
     });
