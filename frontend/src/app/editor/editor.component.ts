@@ -10,7 +10,6 @@ import {
 } from '@codemirror/autocomplete';
 import { AiCompletionService } from '../services/ai-completion.service';
 import { CollaborationService } from '../services/collaboration.service';
-import { yCollab } from 'y-codemirror.next';
 import * as Y from 'yjs';
 import { firstValueFrom } from 'rxjs';
 
@@ -50,7 +49,6 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
 
     const customAiCompletion = (context: CompletionContext): Promise<CompletionResult | null> => {
       const match = context.matchBefore(/[\w\.]+/);
-
       const fromPos = match ? match.from : context.pos;
 
       const cursorPosition = context.pos;
@@ -78,6 +76,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
               type: s.type,
               apply: s.label,
             })),
+            filter: false,
           };
         })
         .catch((err) => {
