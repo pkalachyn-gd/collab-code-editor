@@ -1,74 +1,56 @@
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-
-import {
-  AiCompletionService,
-  AiCompletionRequest,
-  AiCompletionResponse,
-} from './ai-completion.service';
-import { of } from 'rxjs';
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { AiCompletionService } from './ai-completion.service';
+import { AiCompletionRequest, AiCompletionResponse } from '../models/ai-completion.models';
+import { environment } from '../../environments/environment';
 
 describe('AiCompletionService', () => {
   let service: AiCompletionService;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [AiCompletionService],
+    });
     service = TestBed.inject(AiCompletionService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should return mock completions after delay', fakeAsync(() => {
+  it('should send a POST request and return completions', () => {
     const mockRequest: AiCompletionRequest = {
       fullText: 'cons',
       cursorPosition: 4,
-      textBeforeCursor: 'cons',
     };
 
     const expectedResponse: AiCompletionResponse = {
       suggestions: [
         { label: 'console', type: 'variable' },
-        { label: 'console.log', type: 'function' },
         { label: 'const', type: 'keyword' },
       ],
     };
 
     let actualResponse: AiCompletionResponse | undefined;
 
-    spyOn(service, 'getCompletions').and.callThrough();
-
     service.getCompletions(mockRequest).subscribe((response) => {
       actualResponse = response;
     });
 
-    expect(actualResponse).toBeUndefined();
+    const req = httpMock.expectOne(environment.aiCompletionApiUrl);
 
-    tick(300);
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(mockRequest);
+
+    req.flush(expectedResponse);
 
     expect(actualResponse).toEqual(expectedResponse);
-    expect(service.getCompletions).toHaveBeenCalledWith(mockRequest);
-  }));
-
-  // An alternative test using done() for asynchrony
-  it('should return mock completions (using done)', (done: DoneFn) => {
-    const mockRequest: AiCompletionRequest = {
-      fullText: 'cons',
-      cursorPosition: 4,
-      textBeforeCursor: 'cons',
-    };
-
-    const expectedResponse: AiCompletionResponse = {
-      suggestions: [
-        { label: 'console', type: 'variable' },
-        { label: 'console.log', type: 'function' },
-        { label: 'const', type: 'keyword' },
-      ],
-    };
-
-    service.getCompletions(mockRequest).subscribe((response) => {
-      expect(response).toEqual(expectedResponse);
-      done();
-    });
   });
 });
