@@ -4,6 +4,10 @@
   font-family: sans-serif;
   margin: 1em auto;
 
+  @media screen and (max-width: 950px) {
+    flex-direction: column;
+  }
+
   & > div {
     background-color: var(--gray-700);
     padding: 1em;
@@ -58,7 +62,7 @@ form + p {
 }
 
 .room-list {
-  ul {
+  menu {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -67,11 +71,12 @@ form + p {
   }
 
   li {
+    display: inline-block;
+    margin: 0 0.5em 0.5em 0;
+    border-radius: 0.25em;
     padding: 10px;
     background-color: white;
     border: 1px solid #ddd;
-    margin-bottom: 5px;
-    border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.2s;
     font-size: 14px;
@@ -85,6 +90,7 @@ form + p {
       border-color: #007bff;
       font-weight: bold;
       color: #0056b3;
+      cursor: default;
     }
   }
 

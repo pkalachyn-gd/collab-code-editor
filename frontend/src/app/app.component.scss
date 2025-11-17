@@ -5,6 +5,7 @@
   height: 100vh;
   max-height: 100vh;
   justify-content: stretch;
+  box-sizing: border-box;
 }
 
 main {
@@ -12,7 +13,7 @@ main {
   flex-grow: 1;
   flex-direction: column;
   width: 100%;
-  padding: 1rem;
+  padding: 0;
   overflow-y: auto;
 }
 
@@ -37,8 +38,11 @@ h2 {
 }
 
 footer {
+  border-color: #1E90FF;
+  border-style: solid;
+  border-width: 1px 0 0 0;
   flex-grow: 0;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
   width: 100%;
 }
