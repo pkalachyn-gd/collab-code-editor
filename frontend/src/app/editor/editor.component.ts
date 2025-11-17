@@ -44,12 +44,10 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     const customAiCompletion = (context: CompletionContext): Promise<CompletionResult | null> => {
       const cursorPosition = context.pos;
       const fullText = context.state.doc.toString();
-      const textBeforeCursor = fullText.substring(0, cursorPosition);
 
       const requestPayload = {
         fullText: fullText,
         cursorPosition: cursorPosition,
-        textBeforeCursor: textBeforeCursor,
       };
 
       const resetThrottle = () => {
