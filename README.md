@@ -2,6 +2,12 @@
 
 This is a project for a real-time collaborative code editor built with Angular, CodeMirror 6, and Yjs. It features a live collaboration server (Node.js) and an AI code completion service powered by the Gemini API.
 
+## ✨ Features Demo
+
+Here is a quick look at how the app works:
+
+![Demonstration of the main search and filtering feature](assets/app-demo.gif)
+
 # Architecture Overview
 
 The system is designed as a decoupled frontend and backend, with collaboration and AI logic handled by two separate services.
@@ -154,10 +160,10 @@ You are now ready to use the collaborative code editor!
 
     ## Potential Next Steps
 
-        Activate Real AI in Frontend: The AiCompletionService in Angular needs to be updated to call the live backend at http://localhost:8080/api/complete instead of returning mock data.
-
         Add Persistence: Integrate a persistent Yjs provider (like y-leveldb or y-mongodb) into the y-websocket server to save document states.
 
         Enhance Awareness: Use provider.awareness.setLocalStateField on the frontend to add user names and colors, and display this information in the UI.
 
         Refine Completions: Improve the from: logic in the customAiCompletion function to replace text from the beginning of the current word, not just from the cursor position.
+
+        Rate limiting: Add rate limiting both on client and completer side
