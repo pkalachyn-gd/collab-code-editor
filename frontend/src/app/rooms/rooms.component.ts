@@ -1,15 +1,18 @@
-import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RoomService } from '../services/room.service';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map, catchError, of, startWith, Observable } from 'rxjs';
-import { RoomsState } from '../models/rooms.model';
-import { Router, ActivatedRoute } from '@angular/router';
+import {ChangeDetectionStrategy, Component, computed, inject, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {RoomService} from '../services/room.service';
+import {toSignal} from '@angular/core/rxjs-interop';
+import {catchError, map, Observable, of, startWith} from 'rxjs';
+import {RoomsState} from '../models/rooms.model';
+import {ActivatedRoute, Router} from '@angular/router';
+import {FormBuilder, ReactiveFormsModule, Validators} from "@angular/forms";
+
+const ROOM_ID_PATTERN = /^\s*[\da-z-]+\s*$/;
 
 @Component({
   selector: 'app-rooms',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './rooms.component.html',
   styleUrls: ['./rooms.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,13 +21,14 @@ export class RoomsComponent {
   private roomService = inject(RoomService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private fb = inject(FormBuilder);
+  roomForm = this.fb.group({roomId: ['', [Validators.required, Validators.pattern(ROOM_ID_PATTERN), Validators.required]]});
 
   newRoomName = signal('');
 
-  private initialRoom = this.route.snapshot.queryParamMap.get('room') || 'default-room';
   readonly currentRoom = toSignal(
     this.route.queryParamMap.pipe(map((params) => params.get('room') || 'default-room')),
-    { initialValue: this.initialRoom }
+    {initialValue: 'default-room'}
   );
 
   private apiState$ = this.roomService.getActiveRooms().pipe(
@@ -48,7 +52,7 @@ export class RoomsComponent {
     })
   );
 
-  private apiState = toSignal(this.apiState$, { requireSync: true });
+  private apiState = toSignal(this.apiState$, {requireSync: true});
 
   state = computed((): RoomsState => {
     const api = this.apiState();
@@ -72,22 +76,18 @@ export class RoomsComponent {
     };
   });
 
-  switchRoom(roomName: string): void {
+  goToRoom(roomId: string) {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { room: roomName },
+      queryParams: {room: roomId},
     });
   }
 
-  createOrJoinRoom(): void {
-    const room = this.newRoomName().trim();
-    if (room) {
-      this.switchRoom(room);
+  createOrJoinRoom() {
+    const roomId = this.roomForm.controls.roomId?.value?.trim() || '';
+    if (ROOM_ID_PATTERN.test(roomId)) {
+      this.goToRoom(roomId);
     }
   }
 
-  onNewRoomInput(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.newRoomName.set(target.value);
-  }
 }
