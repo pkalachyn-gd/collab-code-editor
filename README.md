@@ -78,8 +78,10 @@ To get the collaborative code editor up and running, follow these steps:
 Before you begin, ensure you have the following installed:
 
 *   **Java 21**
-*   **Node.js** (v18 or higher)
+*   **Node.js** (v18 or higher).* 
 *   A **Google Gemini API Key**
+
+\* NVM users can benefit from `nvm use` which will pick up the version from the `.nvmrc` file
 
 ### 1. Configure Environment Variables
 
