@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, inject, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {RoomService} from '../services/room.service';
 import {toSignal} from '@angular/core/rxjs-interop';
@@ -23,8 +23,6 @@ export class RoomsComponent {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   roomForm = this.fb.group({roomId: ['', [Validators.required, Validators.pattern(ROOM_ID_PATTERN), Validators.required]]});
-
-  newRoomName = signal('');
 
   readonly currentRoom = toSignal(
     this.route.queryParamMap.pipe(map((params) => params.get('room') || 'default-room')),

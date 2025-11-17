@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import {Component, ViewChild, ElementRef, signal, effect, AfterViewInit, ChangeDetectionStrategy} from '@angular/core';
 import { EditorView, basicSetup } from 'codemirror';
 import { keymap } from '@codemirror/view';
 import { javascript } from '@codemirror/lang-javascript';
@@ -12,58 +12,58 @@ import { AiCompletionService } from '../services/ai-completion.service';
 import { CollaborationService } from '../services/collaboration.service';
 import { yCollab } from 'y-codemirror.next';
 
+/** We don't use ChangeDetectionStrategy.OnPush because
+ * of external signals from WebSocket
+ */
 @Component({
   selector: 'app-editor',
   standalone: true,
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
   providers: [CollaborationService],
-  // We don't use CDR:OnPush,  because we have external signals from WebSocket
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditorComponent implements AfterViewInit, OnDestroy {
+export class EditorComponent implements AfterViewInit {
   @ViewChild('editorHost') editorHost!: ElementRef;
 
-  private editor!: EditorView;
+  private editor?: EditorView;
   private shouldThrottleCompletion = false;
+  private roomName = signal(new URLSearchParams(window.location.search).get('room') || 'default-room');
 
   constructor(
     private aiService: AiCompletionService,
     private collabService: CollaborationService
-  ) {}
+  ) {
+    effect(() => {
+      if (this.editorHost) {
+        this.initializeEditor(this.roomName());
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomName = urlParams.get('room') || 'default-room';
+    this.initializeEditor(this.roomName());
+  }
 
+  private initializeEditor(roomName: string): void {
+    this.editor?.destroy();
+    this.collabService.ngOnDestroy();
     this.collabService.connect(roomName);
 
-    const yText = this.collabService.yText;
-    const awareness = this.collabService.awareness;
-    const undoManager = this.collabService.undoManager;
-
     const customAiCompletion = (context: CompletionContext): Promise<CompletionResult | null> => {
-      const cursorPosition = context.pos;
-      const fullText = context.state.doc.toString();
-
       const requestPayload = {
-        fullText: fullText,
-        cursorPosition: cursorPosition,
-      };
-
-      const resetThrottle = () => {
-        this.shouldThrottleCompletion = false;
+        fullText: context.state.doc.toString(),
+        cursorPosition: context.pos,
       };
 
       return this.aiService
         .getCompletions(requestPayload)
         .toPromise()
         .then((response): CompletionResult | null => {
-          resetThrottle();
-          if (!response || !response.suggestions || response.suggestions.length === 0) {
-            return null;
-          }
+          this.shouldThrottleCompletion = false;
+          if (!response?.suggestions?.length) return null;
           return {
-            from: cursorPosition,
+            from: context.pos,
             options: response.suggestions.map((s) => ({
               label: s.label,
               type: s.type,
@@ -72,43 +72,27 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
           };
         })
         .catch((err) => {
-          resetThrottle();
+          this.shouldThrottleCompletion = false;
           console.error('AI Completion Error:', err);
           return null;
         });
     };
 
     const throttledStartCompletion = (view: EditorView): boolean => {
-      if (this.shouldThrottleCompletion) {
-        return true;
-      }
+      if (this.shouldThrottleCompletion) return true;
       this.shouldThrottleCompletion = true;
       return startCompletion(view);
     };
-
-    const newCompletionKeymap = keymap.of([
-      {
-        key: 'Ctrl-.',
-        run: throttledStartCompletion,
-      },
-    ]);
 
     this.editor = new EditorView({
       extensions: [
         basicSetup,
         javascript(),
-        autocompletion({
-          override: [customAiCompletion],
-          activateOnTyping: false,
-        }),
-        newCompletionKeymap,
-        yCollab(yText, awareness, { undoManager }),
+        autocompletion({ override: [customAiCompletion], activateOnTyping: false }),
+        keymap.of([{ key: 'Ctrl-.', run: throttledStartCompletion }]),
+        yCollab(this.collabService.yText, this.collabService.awareness, { undoManager: this.collabService.undoManager }),
       ],
       parent: this.editorHost.nativeElement,
     });
-  }
-
-  ngOnDestroy(): void {
-    this.collabService.ngOnDestroy();
   }
 }
