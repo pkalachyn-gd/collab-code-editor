@@ -46,7 +46,7 @@ public class AutocompleteServiceTest {
     @Test
     void testGetSuggestions_success() throws JsonProcessingException {
         // Given
-        CompletionRequest request = new CompletionRequest("test", 0, "test");
+        CompletionRequest request = new CompletionRequest("test", 0);
         String jsonResponse = "[{\"label\":\"suggestion1\",\"type\":\"type1\"}]";
         List<Suggestion> suggestions = Collections.singletonList(new Suggestion("suggestion1", "type1"));
 
@@ -64,13 +64,13 @@ public class AutocompleteServiceTest {
         // Then
         assertNotNull(response);
         assertEquals(1, response.suggestions().size());
-        assertEquals("suggestion1", response.suggestions().get(0).label());
+        assertEquals("suggestion1", response.suggestions().getFirst().label());
     }
 
     @Test
     void testGetSuggestions_emptyResponse() throws JsonProcessingException {
         // Given
-        CompletionRequest request = new CompletionRequest("test", 0, "test");
+        CompletionRequest request = new CompletionRequest("test", 0);
         String jsonResponse = "[]";
         List<Suggestion> suggestions = Collections.emptyList();
 
@@ -93,7 +93,7 @@ public class AutocompleteServiceTest {
     @Test
     void testGetSuggestions_jsonParsingException() throws JsonProcessingException {
         // Given
-        CompletionRequest request = new CompletionRequest("test", 0, "test");
+        CompletionRequest request = new CompletionRequest("test", 0);
         String malformedJsonResponse = "[invalid-json]";
 
         ChatClient.ChatClientRequestSpec prompt = mock(ChatClient.ChatClientRequestSpec.class);
@@ -105,15 +105,13 @@ public class AutocompleteServiceTest {
         when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenThrow(JsonProcessingException.class);
 
         // When & Then
-        assertThrows(JsonParsingException.class, () -> {
-            autocompleteService.getSuggestions(request);
-        });
+        assertThrows(JsonParsingException.class, () -> autocompleteService.getSuggestions(request));
     }
 
     @Test
     void testGetSuggestions_noJsonArrayInResponse() {
         // Given
-        CompletionRequest request = new CompletionRequest("test", 0, "test");
+        CompletionRequest request = new CompletionRequest("test", 0);
         String responseWithoutJson = "no json array";
 
         ChatClient.ChatClientRequestSpec prompt = mock(ChatClient.ChatClientRequestSpec.class);
@@ -124,8 +122,6 @@ public class AutocompleteServiceTest {
         when(call.content()).thenReturn(responseWithoutJson);
 
         // When & Then
-        assertThrows(JsonParsingException.class, () -> {
-            autocompleteService.getSuggestions(request);
-        });
+        assertThrows(JsonParsingException.class, () -> autocompleteService.getSuggestions(request));
     }
 }

@@ -40,9 +40,7 @@ public class AutocompleteService {
             ---
             %s
             ---
-            The cursor is at position %s. The text before the cursor is:
-            ---
-            %s""";
+            The cursor is at position %s.""";
 
     private static final Logger logger = LoggerFactory.getLogger(AutocompleteService.class);
 
@@ -67,7 +65,7 @@ public class AutocompleteService {
     }
 
     private String createPrompt(CompletionRequest request) {
-        return PROMPT.formatted(request.fullText(), request.cursorPosition(), request.textBeforeCursor());
+        return PROMPT.formatted(request.fullText(), request.cursorPosition());
     }
 
     private List<Suggestion> parseResponse(String response) {

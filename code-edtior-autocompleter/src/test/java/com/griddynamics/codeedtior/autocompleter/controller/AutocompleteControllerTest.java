@@ -10,9 +10,9 @@ import com.griddynamics.codeedtior.autocompleter.service.AutocompleteService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -29,7 +29,7 @@ public class AutocompleteControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private AutocompleteService autocompleteService;
 
     @Autowired
@@ -39,8 +39,7 @@ public class AutocompleteControllerTest {
     public void testComplete() throws Exception {
         CompletionRequest request = new CompletionRequest(
                 "function helloWorld() {\n  console.log('Hello, world'); \n}",
-                55,
-                "function helloWorld() {\n  console.log('Hello, world'); "
+                55
         );
 
         Suggestion suggestion = new Suggestion("console", "variable");
@@ -59,8 +58,7 @@ public class AutocompleteControllerTest {
     public void testComplete_emptySuggestions() throws Exception {
         CompletionRequest request = new CompletionRequest(
                 "function helloWorld() {\n  console.log('Hello, world'); \n}",
-                55,
-                "function helloWorld() {\n  console.log('Hello, world'); "
+                55
         );
 
         CompletionResponse response = new CompletionResponse(Collections.emptyList());
@@ -78,8 +76,7 @@ public class AutocompleteControllerTest {
     public void testComplete_JsonParsingException() throws Exception {
         CompletionRequest request = new CompletionRequest(
                 "function helloWorld() {\n  console.log('Hello, world'); \n}",
-                55,
-                "function helloWorld() {\n  console.log('Hello, world'); "
+                55
         );
 
         when(autocompleteService.getSuggestions(any(CompletionRequest.class)))
@@ -101,8 +98,7 @@ public class AutocompleteControllerTest {
     public void testComplete_fullTextNull() throws Exception {
         CompletionRequest request = new CompletionRequest(
                 null,
-                55,
-                "function helloWorld() {\n  console.log('Hello, world'); "
+                55
         );
 
         ErrorResponse expectedResponse = new ErrorResponse(
@@ -121,8 +117,7 @@ public class AutocompleteControllerTest {
     public void testComplete_fullTextEmpty() throws Exception {
         CompletionRequest request = new CompletionRequest(
                 "",
-                55,
-                "function helloWorld() {\n  console.log('Hello, world'); "
+                55
         );
 
         ErrorResponse expectedResponse = new ErrorResponse(
@@ -141,8 +136,7 @@ public class AutocompleteControllerTest {
     public void testComplete_fullTextBlank() throws Exception {
         CompletionRequest request = new CompletionRequest(
                 "   ",
-                55,
-                "function helloWorld() {\n  console.log('Hello, world'); "
+                55
         );
 
         ErrorResponse expectedResponse = new ErrorResponse(
@@ -157,63 +151,5 @@ public class AutocompleteControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
     }
 
-    @Test
-    public void testComplete_textBeforeCursorNull() throws Exception {
-        CompletionRequest request = new CompletionRequest(
-                "function helloWorld() {\n  console.log('Hello, world'); \n}",
-                55,
-                null
-        );
 
-        ErrorResponse expectedResponse = new ErrorResponse(
-                "Validation failed: textBeforeCursor: must not be blank",
-                HttpStatus.BAD_REQUEST.value()
-        );
-
-        mockMvc.perform(post("/api/complete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
-    }
-
-    @Test
-    public void testComplete_textBeforeCursorEmpty() throws Exception {
-        CompletionRequest request = new CompletionRequest(
-                "function helloWorld() {\n  console.log('Hello, world'); \n}",
-                55,
-                ""
-        );
-
-        ErrorResponse expectedResponse = new ErrorResponse(
-                "Validation failed: textBeforeCursor: must not be blank",
-                HttpStatus.BAD_REQUEST.value()
-        );
-
-        mockMvc.perform(post("/api/complete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
-    }
-
-    @Test
-    public void testComplete_textBeforeCursorBlank() throws Exception {
-        CompletionRequest request = new CompletionRequest(
-                "function helloWorld() {\n  console.log('Hello, world'); \n}",
-                55,
-                "   "
-        );
-
-        ErrorResponse expectedResponse = new ErrorResponse(
-                "Validation failed: textBeforeCursor: must not be blank",
-                HttpStatus.BAD_REQUEST.value()
-        );
-
-        mockMvc.perform(post("/api/complete")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().json(objectMapper.writeValueAsString(expectedResponse)));
-    }
 }
