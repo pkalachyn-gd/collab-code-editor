@@ -48,6 +48,7 @@ export class EditorComponent implements AfterViewInit, OnDestroy {
     const undoManager = this.collabService.undoManager;
 
     const customAiCompletion = (context: CompletionContext): Promise<CompletionResult | null> => {
+      // matches word characters and dots, allowing property access completions like 'object.property'
       const match = context.matchBefore(/[\w\.]+/);
       const fromPos = match ? match.from : context.pos;
 
