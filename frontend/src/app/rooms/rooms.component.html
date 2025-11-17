@@ -1,39 +1,42 @@
 <div class="rooms-container">
-  <div class="room-creator">
-    <h4>Create / Join Room</h4>
-    <div class="create-form">
-      <input
-        type="text"
-        [value]="newRoomName()"
-        (input)="onNewRoomInput($event)"
-        (keyup.enter)="createOrJoinRoom()"
-        placeholder="Enter new room name..."
-      />
-      <button (click)="createOrJoinRoom()">Go</button>
+    <div class="room-creator">
+        <h4>Create / Join Room</h4>
+        <form class="create-form" [formGroup]="roomForm" novalidate (submit)="createOrJoinRoom()">
+            <input
+                    type="text"
+                    formControlName="roomId"
+                    placeholder="Room ID..."
+            />
+            <button [disabled]="!roomForm.valid" type="submit">Go</button>
+        </form>
+        <p>
+            Alphanumerical characters and hyphens only, e.g. room-22
+        </p>
     </div>
-  </div>
 
-  <div class="room-list">
-    <h4>Active Rooms</h4>
+    <div class="room-list">
+        <h4>Active Rooms</h4>
 
-    @if (state().isLoading) {
-    <div class="loading">Loading...</div>
-    } @else if (state().error) {
-    <div class="error">{{ state().error }}</div>
-    } @else { @if (state().rooms.length > 0) {
-    <ul>
-      @for (room of state().rooms; track room) {
-      <li
-        [class.active]="room === currentRoom()"
-        (click)="switchRoom(room)"
-        title="Click to join {{ room }}"
-      >
-        {{ room }}
-      </li>
-      }
-    </ul>
-    } @else {
-    <div class="empty">No active rooms. Create one!</div>
-    } }
-  </div>
+        @if (state().isLoading) {
+            <div class="loading">Loading...</div>
+        } @else if (state().error) {
+            <div class="error">{{ state().error }}</div>
+        } @else {
+            @if (state().rooms.length > 0) {
+                <ul>
+                    @for (room of state().rooms; track room) {
+                        <li
+                                [class.active]="room === currentRoom()"
+                                (click)="goToRoom(room)"
+                                title="Click to join {{ room }}"
+                        >
+                            {{ room }}
+                        </li>
+                    }
+                </ul>
+            } @else {
+                <div class="empty">No active rooms. Create one!</div>
+            }
+        }
+    </div>
 </div>
