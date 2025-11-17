@@ -1,0 +1,92 @@
+.rooms-container {
+  display: flex;
+  gap: 2em;
+  font-family: sans-serif;
+  padding: 20px;
+  border-top: 1px solid #eee;
+  max-width: 60em;
+  margin: auto;
+
+  & > div {
+    background-color: #f9f9f9;
+    padding: 1em;
+  }
+}
+
+.room-creator,
+.room-list {
+  flex: 1;
+}
+
+h4 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 5px;
+}
+
+.create-form {
+  display: flex;
+  gap: 5px;
+
+  input[type='text'] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 8px 16px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+}
+
+.room-list {
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  li {
+    padding: 10px;
+    background-color: white;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+
+    &.active {
+      background-color: #e0f7fa;
+      border-color: #007bff;
+      font-weight: bold;
+      color: #0056b3;
+    }
+  }
+
+  .loading,
+  .error,
+  .empty {
+    color: #888;
+    font-style: italic;
+  }
+}
