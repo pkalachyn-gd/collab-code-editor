@@ -24,7 +24,7 @@ const mockCollabService = jasmine.createSpyObj('CollaborationService', ['connect
   undoManager: new UndoManager(new Y.Text()),
 });
 
-xdescribe('EditorComponent', () => {
+describe('EditorComponent', () => {
   let component: EditorComponent;
   let fixture: ComponentFixture<EditorComponent>;
 
@@ -61,7 +61,7 @@ xdescribe('EditorComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  xdescribe('ngAfterViewInit', () => {
+  describe('ngAfterViewInit', () => {
     it('should connect to "default-room"', () => {
       mockUrlParams.get.withArgs('room').and.returnValue(null);
       fixture.detectChanges();
@@ -86,7 +86,7 @@ xdescribe('EditorComponent', () => {
     });
   });
 
-  xdescribe('ngOnDestroy', () => {
+  describe('ngOnDestroy', () => {
     it('should call collabService.ngOnDestroy', () => {
       fixture.detectChanges();
       fixture.destroy();
@@ -94,7 +94,7 @@ xdescribe('EditorComponent', () => {
     });
   });
 
-  xdescribe('customAiCompletion function', () => {
+  describe('customAiCompletion function', () => {
     let customAiCompletion: (context: CompletionContext) => Promise<CompletionResult | null>;
     let mockContext: CompletionContext;
 
