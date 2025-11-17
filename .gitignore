@@ -35,5 +35,5 @@ yarn-error.log*
 .DS_Store
 /code-edtior-autocompleter/*.iml
 /code-edtior-autocompleter/target/
-/code-edtior-autocompleter/.mvn/
+/code-edtior-autocompleter/.mvn/wrapper/maven-wrapper.jar
 /code-edtior-autocompleter/.gemini/
