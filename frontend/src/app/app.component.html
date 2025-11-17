@@ -2,11 +2,6 @@
   <h1 class="main-title">Code Editor TypeScript/JS</h1>
 
   <div class="editor-container">
-    <!-- 
-      When showEditor() becomes false, the component is destroyed.
-      When it becomes true, the component will be recreated,
-      call ngAfterViewInit, and connect to the new room.
-    -->
     @if (showEditor()) {
     <app-editor></app-editor>
     }
