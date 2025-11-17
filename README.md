@@ -8,41 +8,41 @@ Here is a quick look at how the app works:
 
 ![Demonstration of the main search and filtering feature](assets/app-demo.gif)
 
-# Architecture Overview
+## Architecture Overview
 
 The system is designed as a decoupled frontend and backend, with collaboration and AI logic handled by two separate services.
 
-    Frontend (Angular): A standalone Angular application (/frontend) that hosts a CodeMirror 6 editor.
+### Frontend (Angular): A standalone Angular application (/frontend) that hosts a CodeMirror 6 editor.
 
-        CollaborationService: Manages the Yjs document (Y.Doc), UndoManager, and the WebSocket connection to the collaboration server.
+`CollaborationService`: Manages the Yjs document (Y.Doc), UndoManager, and the WebSocket connection to the collaboration server.
 
-        AiCompletionService: Manages HTTP requests for AI code completion to the Spring Boot backend.
+`AiCompletionService`: Manages HTTP requests for AI code completion to the Spring Boot backend.
 
-        EditorComponent: Orchestrates the services, binds them to the CodeMirror EditorView, and handles UI logic.
+`EditorComponent`: Orchestrates the services, binds them to the CodeMirror EditorView, and handles UI logic.
 
-    Backend (Two Components):
+### Backend (Two Components):
 
-        1. Collaboration Server (Node.js + y-websocket):
+1. Collaboration Server (Node.js + y-websocket):
 
-            Located in /backend.
+Located in `/backend`.
 
-            A minimal Node.js server running on ws://localhost:1234.
+A minimal Node.js server running on `ws://localhost:1234`.
 
-            Uses WebSockets to synchronize the Yjs document (CRDT data) between all clients connected to the same "room".
+Uses WebSockets to synchronize the Yjs document (CRDT data) between all clients connected to the same "room".
 
-            Manages and broadcasts user "awareness" (cursors).
+Manages and broadcasts user "awareness" (cursors).
 
-        2. AI Autocompleter Service (Spring Boot):
+2. AI Autocompleter Service (Spring Boot):
 
-            Located in /code-edtior-autocompleter.
+Located in `/code-edtior-autocompleter`.
 
-            A Spring Boot application that provides intelligent code completion suggestions powered by Google's Gemini API.
+A Spring Boot application that provides intelligent code completion suggestions powered by Google's Gemini API.
 
-            Exposes a single endpoint: POST /api/complete.
+Exposes a single endpoint: `POST /api/complete`.
 
-            Securely handles the Gemini API key, preventing its exposure to the frontend.
+Securely handles the Gemini API key preventing its exposure to the frontend.
 
-# Communication Flow
+## Communication Flow
 
 ```mermaid
 graph TD
@@ -69,11 +69,11 @@ graph TD
     Autocompleter -- "Google AI SDK" --> GeminiAPI
 ```
 
-# Getting Started
+## Getting Started
 
 To get the collaborative code editor up and running, follow these steps:
 
-## Prerequisites
+### Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -81,7 +81,7 @@ Before you begin, ensure you have the following installed:
 *   **Node.js** (v18 or higher)
 *   A **Google Gemini API Key**
 
-## 1. Configure Environment Variables
+### 1. Configure Environment Variables
 
 The AI Autocompleter service requires your Gemini API key. You can also optionally specify the Gemini model to use.
 
@@ -92,7 +92,7 @@ export GEMINI_API_KEY="YOUR_API_KEY" # Replace with your actual Gemini API Key
 # export GEMINI_MODEL="gemini-2.5-pro" # Optional: Uncomment and set to use a different model (defaults to gemini-2.5-flash)
 ```
 
-## 2. Install Dependencies and Run All Services
+### 2. Install Dependencies and Run All Services
 
 From the **root directory** of the project, execute the following commands. This will install necessary Node.js dependencies (including `concurrently` for running multiple processes) and then launch all three applications simultaneously.
 
@@ -100,11 +100,12 @@ From the **root directory** of the project, execute the following commands. This
 # Install root-level Node.js dependencies (including 'concurrently')
 npm install
 
-# Run all services: Frontend, Node.js Collaboration Server, and Spring Boot AI Service
+# Run all services: Frontend, Node.js Collaboration Server,
+# and Spring Boot AI Service
 npm start
 ```
 
-### What to Expect:
+#### What to Expect:
 
 Upon successful execution of `npm start`, the following services will be running:
 
@@ -114,56 +115,56 @@ Upon successful execution of `npm start`, the following services will be running
 
 You are now ready to use the collaborative code editor!
 
-# How to Test
+## How to Test
 
-    1. Real-time Collaboration (Yjs)
+### Real-time Collaboration (Yjs)
 
-        This feature is fully functional.
+This feature is fully functional.
 
-        Open your browser to http://localhost:4200/?room=project-A.
+Open your browser to http://localhost:4200/?room=project-A.
 
-        Open a second browser tab (or an incognito window) and navigate to the same URL: http://localhost:4200/?room=project-A.
+Open a second browser tab (or an incognito window) and navigate to the same URL: http://localhost:4200/?room=project-A.
 
-        Type in one editor. The text (and your cursor) will appear in real-time in the other window.
+Type in one editor. The text (and your cursor) will appear in real-time in the other window.
 
-    2. AI Code Completion
+### AI Code Completion
 
-        This feature is now connected to the live AI backend.
+This feature is now connected to the live AI backend.
 
-        In the editor, type a few letters (e.g., cons).
+In the editor, type a few letters (e.g., `cons`).
 
-        Press the custom hotkey: Ctrl + . (Control + Dot).
+Press the custom hotkey: Ctrl + . (Control + Dot).
 
-        A completion menu will appear with suggestions from the Gemini API.
+A completion menu will appear with suggestions from the Gemini API.
 
-# Project Details
+## Project Details
 
-    ## Gemini API Key Configuration
+## Gemini API Key Configuration
 
-        The `GEMINI_API_KEY` is used by the Spring Boot application. It is read from the environment variable you set in the "Getting Started" section. The key is never exposed to the frontend.
+The `GEMINI_API_KEY` is used by the Spring Boot application. It is read from the environment variable you set in the "Getting Started" section. The key is never exposed to the frontend.
 
-        You can also specify the Gemini model to use by setting the `GEMINI_MODEL` environment variable. If not set, the service will default to `gemini-2.5-flash` as configured in `application.properties`.
+You can also specify the Gemini model to use by setting the `GEMINI_MODEL` environment variable. If not set, the service will default to `gemini-2.5-flash` as configured in `application.properties`.
 
-    ## Prompt Engineering & Response Parsing
+### Prompt Engineering & Response Parsing
 
-        Prompt (Request): When the hotkey is pressed, the frontend sends a POST request to /api/complete with a JSON payload containing the fullText of the document, the cursorPosition, and the textBeforeCursor.
+Prompt (Request): When the hotkey is pressed, the frontend sends a POST request to /api/complete with a JSON payload containing the fullText of the document, the cursorPosition, and the textBeforeCursor.
 
-        Response Parsing: The Spring Boot service receives this request, constructs a detailed prompt for the Gemini API, and parses the response. It returns a JSON object in the format { "suggestions": [{ "label": "...", "type": "..." }] }. The frontend then maps this into the format required by CodeMirror's autocomplete extension.
+Response Parsing: The Spring Boot service receives this request, constructs a detailed prompt for the Gemini API, and parses the response. It returns a JSON object in the format { "suggestions": [{ "label": "...", "type": "..." }] }. The frontend then maps this into the format required by CodeMirror's autocomplete extension.
 
-    ## Assumptions & Simplifications
+### Assumptions & Simplifications
 
-        No Persistence: The y-websocket server stores all documents in memory. If the Node.js server restarts, all data is lost.
+No Persistence: The y-websocket server stores all documents in memory. If the Node.js server restarts, all data is lost.
 
-        No Auth: Sessions are public and segmented only by the URL query parameter (?room=...).
+No Auth: Sessions are public and segmented only by the URL query parameter (?room=...).
 
-        Basic Awareness: Cursors are synchronized, but additional user metadata (like names or custom colors) is not yet implemented.
+Basic Awareness: Cursors are synchronized, but additional user metadata (like names or custom colors) is not yet implemented.
 
-    ## Potential Next Steps
+## Potential Next Steps
 
-        Add Persistence: Integrate a persistent Yjs provider (like y-leveldb or y-mongodb) into the y-websocket server to save document states.
+Add Persistence: Integrate a persistent Yjs provider (like y-leveldb or y-mongodb) into the y-websocket server to save document states.
 
-        Enhance Awareness: Use provider.awareness.setLocalStateField on the frontend to add user names and colors, and display this information in the UI.
+Enhance Awareness: Use provider.awareness.setLocalStateField on the frontend to add user names and colors, and display this information in the UI.
 
-        Refine Completions: Improve the from: logic in the customAiCompletion function to replace text from the beginning of the current word, not just from the cursor position.
+Refine Completions: Improve the from: logic in the customAiCompletion function to replace text from the beginning of the current word, not just from the cursor position.
 
-        Rate limiting: Add rate limiting both on client and completer side
+Rate limiting: Add rate limiting both on client and completer side
