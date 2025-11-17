@@ -24,7 +24,7 @@
     <ul>
       @for (room of state().rooms; track room) {
       <li
-        [class.active]="room === currentRoom"
+        [class.active]="room === currentRoom()"
         (click)="switchRoom(room)"
         title="Click to join {{ room }}"
       >

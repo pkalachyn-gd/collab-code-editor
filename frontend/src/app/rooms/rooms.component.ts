@@ -1,9 +1,10 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RoomService } from '../services/room.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, catchError, of, startWith, Observable } from 'rxjs';
 import { RoomsState } from '../models/rooms.model';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-rooms',
@@ -15,40 +16,67 @@ import { RoomsState } from '../models/rooms.model';
 })
 export class RoomsComponent {
   private roomService = inject(RoomService);
-  readonly currentRoom = new URLSearchParams(window.location.search).get('room') || 'default-room';
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   newRoomName = signal('');
 
-  private state$ = this.roomService.getActiveRooms().pipe(
-    map((roomList): RoomsState => {
-      let rooms = roomList;
-      if (this.currentRoom && !roomList.includes(this.currentRoom)) {
-        rooms = [...roomList, this.currentRoom];
-      }
-      return {
-        rooms: rooms.sort(),
-        isLoading: false,
-        error: null,
-      };
-    }),
-    catchError((err): Observable<RoomsState> => {
+  private initialRoom = this.route.snapshot.queryParamMap.get('room') || 'default-room';
+  readonly currentRoom = toSignal(
+    this.route.queryParamMap.pipe(map((params) => params.get('room') || 'default-room')),
+    { initialValue: this.initialRoom }
+  );
+
+  private apiState$ = this.roomService.getActiveRooms().pipe(
+    map((roomList): Omit<RoomsState, 'rooms'> & { apiRooms: string[] } => ({
+      apiRooms: roomList,
+      isLoading: false,
+      error: null,
+    })),
+    catchError((err): Observable<Omit<RoomsState, 'rooms'> & { apiRooms: string[] }> => {
       console.error('The list of rooms could not be loaded.', err);
       return of({
-        rooms: [this.currentRoom],
+        apiRooms: [],
         isLoading: false,
         error: 'The list of rooms could not be loaded. Try to create a new room.',
       });
     }),
     startWith({
-      rooms: [],
+      apiRooms: [],
       isLoading: true,
       error: null,
     })
   );
 
-  state = toSignal(this.state$, { requireSync: true });
+  private apiState = toSignal(this.apiState$, { requireSync: true });
+
+  state = computed((): RoomsState => {
+    const api = this.apiState();
+    const current = this.currentRoom();
+
+    if (api.error) {
+      return {
+        rooms: [current],
+        isLoading: false,
+        error: api.error,
+      };
+    }
+
+    const roomSet = new Set(api.apiRooms);
+    roomSet.add(current);
+
+    return {
+      rooms: Array.from(roomSet).sort(),
+      isLoading: api.isLoading,
+      error: api.error,
+    };
+  });
 
   switchRoom(roomName: string): void {
-    window.location.href = `/?room=${encodeURIComponent(roomName)}`;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { room: roomName },
+    });
   }
 
   createOrJoinRoom(): void {
