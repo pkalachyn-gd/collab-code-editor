@@ -23,17 +23,17 @@
             <div class="error">{{ state().error }}</div>
         } @else {
             @if (state().rooms.length > 0) {
-                <ul>
+                <menu>
                     @for (room of state().rooms; track room) {
                         <li
                                 [class.active]="room === currentRoom()"
-                                (click)="goToRoom(room)"
+                                (click)="room !== currentRoom() && goToRoom(room)"
                                 title="Click to join {{ room }}"
                         >
                             {{ room }}
                         </li>
                     }
-                </ul>
+                </menu>
             } @else {
                 <div class="empty">No active rooms. Create one!</div>
             }
