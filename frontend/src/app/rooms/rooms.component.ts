@@ -20,11 +20,12 @@ export class RoomsComponent {
 
   private state$ = this.roomService.getActiveRooms().pipe(
     map((roomList): RoomsState => {
+      let rooms = roomList;
       if (this.currentRoom && !roomList.includes(this.currentRoom)) {
-        roomList.push(this.currentRoom);
+        rooms = [...roomList, this.currentRoom];
       }
       return {
-        rooms: roomList.sort(),
+        rooms: rooms.sort(),
         isLoading: false,
         error: null,
       };
@@ -47,7 +48,7 @@ export class RoomsComponent {
   state = toSignal(this.state$, { requireSync: true });
 
   switchRoom(roomName: string): void {
-    window.location.href = `/?room=${roomName}`;
+    window.location.href = `/?room=${encodeURIComponent(roomName)}`;
   }
 
   createOrJoinRoom(): void {
